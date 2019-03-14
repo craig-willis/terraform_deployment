@@ -22,6 +22,7 @@ This script migrates v0.5 Tales to the v0.6 workspace format.
 print("Beginning v0.6 Tale migration")
 
 bad_tales = 0
+#for tale in [ Tale().load(ObjectId('5ad4eb52f4b80b00018d92e1'), force=True)]:
 for tale in list(Tale().find()):
     if str(tale['_id']) in {'598bbc1f4264d20001e170b1', '5be57c6b6141bc0001cc43dc',
                             '5b71cb9141453200015fd753', '5c018a216141bc0001cc89a4',
@@ -36,6 +37,7 @@ for tale in list(Tale().find()):
 
     # Create the workspace folder
     workspace = Tale().createWorkspace(tale, creator=user)
+    print("\tCreated workspace folder {} {}".format(workspace['_id'], workspace['name']))
 
     dataSet = tale.get('dataSet', [])
     bad_tale = False
@@ -110,7 +112,7 @@ for tale in list(Tale().find()):
                         pass
                 print('\tRemoving folder {}'.format(folder['name']))
                 Folder().remove(folder)
-                bad_tale = True
+
         for item in Folder().childItems(data_folder):
             files = list(Item().childFiles(item))
             if len(files) != 1:
@@ -157,13 +159,13 @@ for tale in list(Tale().find()):
             bad_tales += 1
         else:
             del tale['folderId']
-            tale['workspaceId'] = data_folder['_id']
+            tale['workspaceId'] = workspace['_id']
             tale['dataset'] = dataSet
             Folder().remove(data_folder)
+            Tale().save(tale)
 
     else:
-        print("\tNo folderId in Tale")
+        print("\tNo folderId in Tale. Already migrated?")
 
-    Tale().save(tale)
 
 print("TOTAL BAD TALES = {}".format(bad_tales))
